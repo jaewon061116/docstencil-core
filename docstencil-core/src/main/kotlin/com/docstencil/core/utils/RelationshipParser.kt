@@ -34,7 +34,10 @@ class RelationshipParser {
 
         if (relsXml != null) {
             val relationships = parse(relsXml)
-            return relationships.find { it.type == OFFICE_DOCUMENT_REL_TYPE }?.target
+            val mainByRel = relationships.find { it.type == OFFICE_DOCUMENT_REL_TYPE }?.target
+            if (mainByRel != null) {
+                return mainByRel
+            }
         }
         if (fallbackConfig == null) {
             return null

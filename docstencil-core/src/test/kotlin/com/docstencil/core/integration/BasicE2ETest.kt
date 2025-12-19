@@ -467,6 +467,19 @@ class BasicE2ETest {
     }
 
     @Test
+    fun `should handle hello world example #2`() {
+        val testName = "e2e_hello2"
+        val templateBytes = DocxComparisonHelper.loadFixture("${testName}_in.docx")
+        val expectedBytes = DocxComparisonHelper.loadFixture("${testName}_out.docx")
+
+        val data = mapOf("name" to "world")
+
+        val actualBytes = OfficeTemplate.fromBytes(templateBytes, options).render(data).bytes
+
+        DocxComparisonHelper.assertDocxEquals(expectedBytes, actualBytes, testName)
+    }
+
+    @Test
     fun `should handle truthiness`() {
         val testName = "e2e_truthiness"
         val templateBytes = DocxComparisonHelper.loadFixture("${testName}_in.docx")
