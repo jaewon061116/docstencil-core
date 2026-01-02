@@ -9,7 +9,7 @@
 <p align="center">
   <a href="https://central.sonatype.com/artifact/com.docstencil/docstencil-core"><img src="https://img.shields.io/maven-central/v/com.docstencil/docstencil-core" alt="Maven Central"></a>
   <img src="https://img.shields.io/badge/Java-8%2B-orange" alt="Java 8+">
-  <a href="docstencil-core/LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0%20%2F%20MIT-blue.svg" alt="License"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0%20%2F%20MIT-blue.svg" alt="License"></a>
 </p>
 
 <p align="center">
@@ -22,12 +22,12 @@
 
 ## What is DocStencil?
 
-DocStencil is an open-source document generation library for Java and Kotlin. It works like mail merge for Word documents — design your templates in Microsoft Word using familiar `{placeholder}` syntax, then render them with your data to produce professional DOCX files.
+DocStencil is an open-source document generation library for Java and Kotlin. It works like mail merge for Word documents: Design your templates in Microsoft Word using familiar `{placeholder}` syntax, then render them with your data to produce professional DOCX files.
 
 **Use cases:**
-- **Invoices & Receipts** — Generate billing documents with line items, totals, and customer details
-- **Contracts & Agreements** — Create legal documents with dynamic clauses and signatures
-- **Reports** — Build data-driven reports with tables, charts, and formatted numbers
+- **Invoices & Receipts**: Generate billing documents with line items, totals, and customer details
+- **Contracts & Agreements**: Create legal documents with dynamic clauses and signatures
+- **Reports**: Build data-driven reports with tables, charts, and formatted numbers
 
 Templates can be edited by anyone familiar with Word. For most use cases no programming knowledge is required. Your team can update document layouts, styles, and content without touching code.
 
@@ -40,7 +40,7 @@ Templates can be edited by anyone familiar with Word. For most use cases no prog
 | **Kotlin-native** | Yes, with Java interop        | Java only | Java only |
 | **Dependencies** | Minimal (only kotlin-reflect) | Heavy (100+ MB) | Moderate |
 
-DocStencil focuses on simplicity: you design templates in Word, not in code. Compare the "Hello World" example above to [docx4j](https://www.docx4java.org/trac/docx4j) or [Apache POI](https://poi.apache.org/components/document/) — DocStencil requires no XML manipulation and no complex object models.
+DocStencil focuses on simplicity: you design templates in Word, not in code. Compare the "Hello World" example above to [docx4j](https://www.docx4java.org/trac/docx4j) or [Apache POI](https://poi.apache.org/components/document/): DocStencil requires no XML manipulation. Word is your visual editor, where you define styles and formatting.
 
 ## Key Features
 
@@ -215,6 +215,13 @@ Yes, that's a core design goal. Templates are regular Word documents. Anyone who
 docx4j is a low-level library for manipulating OOXML documents. It's powerful but requires understanding Word's XML structure. DocStencil is a template engine: You write templates in Word, not code. See the [comparison table](#why-docstencil) above.
 </details>
 
+## Examples
+
+The [`examples/`](examples/) directory contains complete, runnable projects:
+
+- **[spring-boot-getting-started](examples/spring-boot-getting-started)**: Minimal Spring Boot app that generates a DOCX from a template
+- **[spring-boot-invoice-generator](examples/spring-boot-invoice-generator)**: Invoice generation with line items, totals, and formatting
+
 ## Documentation
 
 For comprehensive guides and API reference, visit the **[Documentation](https://docstencil.com/docs)**.
@@ -226,4 +233,4 @@ For comprehensive guides and API reference, visit the **[Documentation](https://
 
 ## License
 
-The library is dual-licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) and [MIT License](https://opensource.org/licenses/MIT). See [docstencil-core/LICENSE](docstencil-core/LICENSE) for details.
+This project is dual-licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) and [MIT License](https://opensource.org/licenses/MIT). See [LICENSE](LICENSE) for details.

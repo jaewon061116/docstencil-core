@@ -66,14 +66,14 @@ Use parentheses to control evaluation order:
 
 From highest to lowest:
 
-1. `()` — Grouping
-2. `.` `.?` — Property access
-3. `!` — Logical NOT
-4. `*` `/` `%` — Multiplication, division, modulo
-5. `+` `-` — Addition, subtraction
-6. `<` `<=` `>` `>=` — Comparison
-7. `==` `!=` — Equality
-8. `and` — Logical AND
-9. `or` — Logical OR
-10. `??` — Null coalescing
-11. `|` — Pipe
+1. `()`: Grouping
+2. `.` `.?`: Property access
+3. `!`: Logical NOT
+4. `*` `/` `%`: Multiplication, division, modulo
+5. `+` `-`: Addition, subtraction
+6. `<` `<=` `>` `>=`: Comparison
+7. `==` `!=`: Equality
+8. `and`: Logical AND
+9. `or`: Logical OR
+10. `??`: Null coalescing
+11. `|`: Pipe

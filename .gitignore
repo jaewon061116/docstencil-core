@@ -9,3 +9,6 @@ TODO.md
 docstencil-core/build/*
 docstencil-core/.gradle/*
 docstencil-core/.kotlin/*
+examples/*/build/*
+examples/*/.gradle/*
+examples/*/.kotlin/*

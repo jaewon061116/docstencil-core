@@ -51,6 +51,18 @@ const config: Config = {
     ],
   ],
 
+  plugins: [
+    [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'guides',
+        path: 'guides',
+        routeBasePath: 'guides',
+        sidebarPath: './sidebarsGuides.ts',
+      },
+    ],
+  ],
+
   themeConfig: {
     // Replace with your project's social card
     // image: 'img/docusaurus-social-card.jpg',
@@ -69,6 +81,13 @@ const config: Config = {
           sidebarId: 'tutorialSidebar',
           position: 'left',
           label: 'Documentation',
+        },
+        {
+          type: 'docSidebar',
+          sidebarId: 'guidesSidebar',
+          docsPluginId: 'guides',
+          label: 'Guides',
+          position: 'left',
         },
         {
           href: 'https://github.com/docstencil/docstencil-core',

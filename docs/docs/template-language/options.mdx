@@ -45,9 +45,9 @@ This might happen for large audit reports that pull in data from a dozen data so
 
 When using parallel mode, all objects in your data map must be thread-safe:
 
-- **Immutable objects** — Safe by default (data classes, records, strings, numbers)
-- **Read-only access** — Safe if you only read properties
-- **Mutable shared state** — Must use synchronization or thread-safe collections
+- **Immutable objects**: Safe by default (data classes, records, strings, numbers)
+- **Read-only access**: Safe if you only read properties
+- **Mutable shared state**: Must use synchronization or thread-safe collections
 
 ```kotlin
 // Safe: immutable data class

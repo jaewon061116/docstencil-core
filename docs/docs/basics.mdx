@@ -135,18 +135,18 @@ Average: {`{$formatNumber(stats.average, "0.0")}`} points
 </WordDoc>
 
 Common patterns:
-- `"0.0"` — one decimal place (e.g., `3.1`)
-- `"0.00"` — two decimal places (e.g., `3.14`)
-- `"#,##0.00"` — thousands separator with two decimals (e.g., `1,234.56`)
+- `"0.0"`: one decimal place (e.g., `3.1`)
+- `"0.00"`: two decimal places (e.g., `3.14`)
+- `"#,##0.00"`: thousands separator with two decimals (e.g., `1,234.56`)
 
 ### Enumerating Items
 
 Use `$enumerate` to get index and position information while iterating. Each item is wrapped with the following properties:
 
-- `value` — the original item
-- `index` — zero-based position (0, 1, 2, ...)
-- `isFirst` / `isLast` — boolean flags for first and last items
-- `isEven` / `isOdd` — boolean flags based on index
+- `value`: the original item
+- `index`: zero-based position (0, 1, 2, ...)
+- `isFirst` / `isLast`: boolean flags for first and last items
+- `isEven` / `isOdd`: boolean flags based on index
 
 <WordDoc filename="Template.docx">
 **Invoice #1234**

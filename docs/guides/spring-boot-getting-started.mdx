@@ -1,0 +1,171 @@
+---
+sidebar_position: 2
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import WordDoc from "@site/src/components/WordDoc";
+
+# Generate Word Documents in Spring Boot
+
+This guide will show you how to create DOCX files from plain DOCX files with placeholders in 5 minutes using Spring Boot and DocStencil.
+
+## 1. Add the Dependency
+
+<Tabs groupId="build-tool">
+  <TabItem value="maven" label="Maven" default>
+
+```xml
+<dependency>
+    <groupId>com.docstencil</groupId>
+    <artifactId>docstencil-core</artifactId>
+    <version>0.1.6</version>
+</dependency>
+```
+
+  </TabItem>
+  <TabItem value="gradle-kotlin" label="Gradle (Kotlin)">
+
+```kotlin
+implementation("com.docstencil:docstencil-core:0.1.6")
+```
+
+  </TabItem>
+  <TabItem value="gradle-groovy" label="Gradle (Groovy)">
+
+```groovy
+implementation 'com.docstencil:docstencil-core:0.1.6'
+```
+
+  </TabItem>
+</Tabs>
+
+## 2. Create a Template
+
+**[Download](/downloads/spring/welcome-letter.docx)** the `welcome-letter.docx` template file or create it yourself using Microsoft Word or LibreOffice:
+
+<WordDoc filename="welcome-letter.docx" downloadUrl="/downloads/spring/welcome-letter.docx">
+<div style={{textAlign: 'right'}}>{`{$format(date, "MMMM d, yyyy")}`}</div>
+
+Dear {`{name}`},
+
+Welcome to **{`{company}`}**! We're excited to have you on board.
+
+Best regards,<br/>
+The {`{company}`} Team
+</WordDoc>
+
+Save it to `src/main/resources/templates/welcome-letter.docx`.
+
+## 3. Create a Service
+
+<Tabs groupId="language">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
+@Service
+class DocumentService {
+
+    private val template = OfficeTemplate.fromResource("templates/welcome-letter.docx")
+
+    fun generateWelcomeLetter(name: String, company: String): ByteArray {
+        return template.render(mapOf(
+            "name" to name,
+            "company" to company,
+            "date" to LocalDate.now()
+        )).toByteArray()
+    }
+}
+```
+
+  </TabItem>
+  <TabItem value="java" label="Java">
+
+```java
+@Service
+public class DocumentService {
+
+    private final OfficeTemplate template =
+        OfficeTemplate.fromResource("templates/welcome-letter.docx");
+
+    public byte[] generateWelcomeLetter(String name, String company) {
+        return template.render(Map.of(
+            "name", name,
+            "company", company,
+            "date", LocalDate.now()
+        )).toByteArray();
+    }
+}
+```
+
+  </TabItem>
+</Tabs>
+
+Templates are thread-safe. You can load them once and then reuse them everywhere.
+
+## 4. Add a REST Endpoint
+
+<Tabs groupId="language">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
+@RestController
+@RequestMapping("/api/documents")
+class DocumentController(private val documentService: DocumentService) {
+
+    @GetMapping("/welcome")
+    fun generateWelcome(
+        @RequestParam name: String,
+        @RequestParam company: String
+    ): ResponseEntity<ByteArray> {
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"welcome.docx\"")
+            .contentType(MediaType.parseMediaType(
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+            .body(documentService.generateWelcomeLetter(name, company))
+    }
+}
+```
+
+  </TabItem>
+  <TabItem value="java" label="Java">
+
+```java
+@RestController
+@RequestMapping("/api/documents")
+public class DocumentController {
+
+    private final DocumentService documentService;
+
+    public DocumentController(DocumentService documentService) {
+        this.documentService = documentService;
+    }
+
+    @GetMapping("/welcome")
+    public ResponseEntity<byte[]> generateWelcome(
+            @RequestParam String name,
+            @RequestParam String company) {
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"welcome.docx\"")
+            .contentType(MediaType.parseMediaType(
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+            .body(documentService.generateWelcomeLetter(name, company));
+    }
+}
+```
+
+  </TabItem>
+</Tabs>
+
+## 5. Test It
+
+```bash
+curl "http://localhost:8080/api/documents/welcome?name=Alice&company=Acme" -o welcome.docx
+```
+
+Open `welcome.docx` to see that your placeholders are replaced with real values.
+
+## Next Steps
+
+- **[Invoice Generation](./invoice-generation)** - Loops, tables, conditionals, and formatting
+- **[Template Language](/basics)** - Complete syntax reference

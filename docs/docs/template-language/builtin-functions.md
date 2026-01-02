@@ -94,10 +94,10 @@ Wrap items with index and position info:
 ```
 
 Each wrapped item has:
-- `value` — the original item
-- `index` — zero-based position (0, 1, 2, ...)
-- `isFirst` / `isLast` — boolean flags
-- `isEven` / `isOdd` — boolean flags based on index
+- `value`: the original item
+- `index`: zero-based position (0, 1, 2, ...)
+- `isFirst` / `isLast`: boolean flags
+- `isEven` / `isOdd`: boolean flags based on index
 
 ### $reverse
 

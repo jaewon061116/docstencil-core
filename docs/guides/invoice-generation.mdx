@@ -1,0 +1,335 @@
+---
+sidebar_position: 4
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import WordDoc from "@site/src/components/WordDoc";
+
+# Generate Invoices from Word Templates
+
+This guide show how to create professional DOCX invoices with line items, calculations, and conditional sections.
+
+You will learn to use many of DocStencil's advanced features. This makes this tutorial a great starting point for your own templates.
+
+:::tip Prerequisites
+For a more minimal example have a look at [Spring Boot Quick Start](./spring-boot-getting-started).
+:::
+
+## Add the Dependency
+
+<Tabs groupId="build-tool">
+  <TabItem value="maven" label="Maven" default>
+
+    ```xml
+    <dependency>
+      <groupId>com.docstencil</groupId>
+      <artifactId>docstencil-core</artifactId>
+      <version>0.1.6</version>
+    </dependency>
+    ```
+
+  </TabItem>
+  <TabItem value="gradle-kotlin" label="Gradle (Kotlin)">
+
+    ```kotlin
+    implementation("com.docstencil:docstencil-core:0.1.6")
+    ```
+
+  </TabItem>
+  <TabItem value="gradle-groovy" label="Gradle (Groovy)">
+
+    ```groovy
+    implementation 'com.docstencil:docstencil-core:0.1.6'
+    ```
+
+  </TabItem>
+</Tabs>
+
+## The Template
+
+**[Download](/downloads/spring/invoice.docx)** the `invoice.docx` template file or create it yourself using Microsoft Word or LibreOffice:
+
+<WordDoc filename="invoice.docx" downloadUrl="/downloads/spring/invoice.docx">
+**INVOICE**
+
+**From:** {`{invoice.company.name}`}, {`{invoice.company.address}`}
+
+**Bill To:** {`{invoice.customer.name}`} ({`{invoice.customer.email}`})
+
+**Invoice #:** {`{invoice.invoiceNumber}`}<br/>
+**Date:** {`{$format(invoice.invoiceDate, "MMMM d, yyyy")}`}<br/>
+{`{if invoice.paid}`}**Status:** PAID{`{end}`}
+
+| # | Description | Qty | Unit Price | Amount |
+|---|-------------|-----|------------|--------|
+| {`{for item in $enumerate(invoice.items)}`}{`{item.index + 1}`} | {`{item.value.description}`} | {`{item.value.quantity}`} | {`{$format(item.value.unitPrice, "#,##0.00")}`} | {`{$format(item.value.quantity * item.value.unitPrice, "#,##0.00")}`}{`{end}`} |
+
+<div style={{textAlign: 'right'}}>
+**Subtotal:** {`{$format(invoice.subtotal, "#,##0.00")}`}<br/>
+**Tax ({`{invoice.taxRate}`}%):** {`{$format(invoice.taxAmount, "#,##0.00")}`}<br/>
+**Total:** {`{$format(invoice.total, "#,##0.00")}`}
+</div>
+
+{`{if !invoice.paid}`}
+**Payment Terms:** Due within {`{invoice.paymentTermsDays}`} days.<br/>
+**Bank:** {`{invoice.company.bankName}`}: Account: {`{invoice.company.accountNumber}`}
+{`{end}`}
+
+Thank you for your business!
+</WordDoc>
+
+## Table Row Loops
+
+Place `{for...}{end}` inside two different cells of a table row to repeat the entire row for each item:
+
+```
+| {for item in items}{item.name} | {item.price}{end} |
+```
+
+Use `$enumerate()` to wrap items with their index to get row numbers:
+
+```
+| {for item in $enumerate(items)}{item.index + 1} | {item.value.name}{end} |
+```
+
+The enumerated item provides:
+- `item.index`: 0, 1, 2, ...
+- `item.value`: the original object
+- `item.isFirst`, `item.isLast`: boolean flags
+
+## Conditionals
+
+Show content based on conditions:
+
+```
+{if paid}PAID{end}           // Shows when paid is true
+{if !paid}Payment due{end}   // Shows when paid is false
+```
+
+## Formatting
+
+
+
+**Numbers:**
+```
+{$format(price, "#,##0.00")}  → 1,234.56
+{$format(qty, "#,##0")}       → 1,235
+```
+
+**Dates:**
+```
+{$format(date, "MMMM d, yyyy")}  → January 15, 2025
+{$format(date, "MM/dd/yyyy")}    → 01/15/2025
+```
+
+## Data Model
+
+<Tabs groupId="language">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
+data class LineItem(
+    val description: String,
+    val quantity: Int,
+    val unitPrice: BigDecimal
+)
+
+data class Invoice(
+    val invoiceNumber: String,
+    val invoiceDate: LocalDate,
+    val company: Company,
+    val customer: Customer,
+    val items: List<LineItem>,
+    val taxRate: Int,
+    val paymentTermsDays: Int,
+    val paid: Boolean = false
+) {
+    val subtotal: BigDecimal
+        get() = items.fold(BigDecimal.ZERO) { acc, item ->
+            acc + (item.unitPrice * item.quantity.toBigDecimal())
+        }
+
+    val taxAmount: BigDecimal
+        get() = subtotal * (taxRate.toBigDecimal() / BigDecimal(100))
+
+    val total: BigDecimal
+        get() = subtotal + taxAmount
+}
+```
+
+  </TabItem>
+  <TabItem value="java" label="Java">
+
+```java
+public record LineItem(String description, int quantity, BigDecimal unitPrice) {}
+
+public record Invoice(
+    String invoiceNumber,
+    LocalDate invoiceDate,
+    Company company,
+    Customer customer,
+    List<LineItem> items,
+    int taxRate,
+    int paymentTermsDays,
+    boolean paid
+) {
+    public BigDecimal getSubtotal() {
+        return items.stream()
+            .map(item -> item.unitPrice().multiply(BigDecimal.valueOf(item.quantity())))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getTaxAmount() {
+        return getSubtotal().multiply(BigDecimal.valueOf(taxRate)).divide(BigDecimal.valueOf(100));
+    }
+
+    public BigDecimal getTotal() {
+        return getSubtotal().add(getTaxAmount());
+    }
+}
+```
+
+  </TabItem>
+</Tabs>
+
+DocStencil calls getters automatically. Even computed properties like `subtotal` work seamlessly.
+
+## The Service
+
+<Tabs groupId="language">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
+@Service
+class InvoiceService {
+
+    private val template = OfficeTemplate.fromResource("templates/invoice.docx")
+
+    fun generate(invoice: Invoice): ByteArray {
+        return template.render(mapOf("invoice" to invoice)).toByteArray()
+    }
+}
+```
+
+  </TabItem>
+  <TabItem value="java" label="Java">
+
+```java
+@Service
+public class InvoiceService {
+
+    private final OfficeTemplate template =
+        OfficeTemplate.fromResource("templates/invoice.docx");
+
+    public byte[] generate(Invoice invoice) {
+        return template.render(Map.of("invoice", invoice)).toByteArray();
+    }
+}
+```
+
+  </TabItem>
+</Tabs>
+
+Since we pass the invoice object directly, the template accesses properties via `{invoice.invoiceNumber}`, `{invoice.company.name}`, etc. DocStencil uses reflection to access object properties automatically.
+
+## The Controller
+
+<Tabs groupId="language">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
+@RestController
+@RequestMapping("/api/invoices")
+class InvoiceController(private val invoiceService: InvoiceService) {
+
+    @GetMapping("/{id}/download")
+    fun download(@PathVariable id: String): ResponseEntity<ByteArray> {
+        val invoice = createSampleInvoice(id)
+        val bytes = invoiceService.generate(invoice)
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"invoice-$id.docx\"")
+            .contentType(MediaType.parseMediaType(
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            ))
+            .body(bytes)
+    }
+
+    private fun createSampleInvoice(id: String): Invoice {
+        return Invoice(
+            invoiceNumber = "INV-$id",
+            invoiceDate = LocalDate.now(),
+            company = Company("Acme Corp", "123 Business Ave, New York, NY", "First National Bank", "1234567890"),
+            customer = Customer("John Smith", "john@example.com"),
+            items = listOf(
+                LineItem("Web Development", 40, BigDecimal("150.00")),
+                LineItem("UI Design", 20, BigDecimal("125.00"))
+            ),
+            taxRate = 10,
+            paymentTermsDays = 30
+        )
+    }
+}
+```
+
+  </TabItem>
+  <TabItem value="java" label="Java">
+
+```java
+@RestController
+@RequestMapping("/api/invoices")
+public class InvoiceController {
+
+    private final InvoiceService invoiceService;
+
+    public InvoiceController(InvoiceService invoiceService) {
+        this.invoiceService = invoiceService;
+    }
+
+    @GetMapping("/{id}/download")
+    public ResponseEntity<byte[]> download(@PathVariable String id) {
+        Invoice invoice = createSampleInvoice(id);
+        byte[] bytes = invoiceService.generate(invoice);
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"invoice-" + id + ".docx\"")
+            .contentType(MediaType.parseMediaType(
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            ))
+            .body(bytes);
+    }
+
+    private Invoice createSampleInvoice(String id) {
+        return new Invoice(
+            "INV-" + id,
+            LocalDate.now(),
+            new Company("Acme Corp", "123 Business Ave, New York, NY", "First National Bank", "1234567890"),
+            new Customer("John Smith", "john@example.com"),
+            List.of(
+                new LineItem("Web Development", 40, new BigDecimal("150.00")),
+                new LineItem("UI Design", 20, new BigDecimal("125.00"))
+            ),
+            10,
+            30,
+            false
+        );
+    }
+}
+```
+
+  </TabItem>
+</Tabs>
+
+## Test It
+
+```bash
+curl "http://localhost:8080/api/invoices/2026-001/download" -o invoice.docx
+```
+
+Open `invoice.docx` to see that your placeholders are replaced with real values.
+
+## Next Steps
+
+- **[Template Language](/basics)** - Complete syntax reference
+- **[Pro Modules](/pro-modules)** - Images, hyperlinks, and more
