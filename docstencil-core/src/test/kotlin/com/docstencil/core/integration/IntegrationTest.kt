@@ -184,7 +184,7 @@ class IntegrationTest {
 
         val result = template.render(data)
 
-        assertTrue(result.contains("Without cast: false"))
+        assertTrue(result.contains("Without cast: true"))
         assertTrue(result.contains("With cast: true"))
         assertTrue(result.contains("Casters: 42,42,42,42,42.5,42.5"))
     }

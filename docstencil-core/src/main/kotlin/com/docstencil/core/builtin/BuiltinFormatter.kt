@@ -1,6 +1,7 @@
 package com.docstencil.core.builtin
 
 import com.docstencil.core.error.TemplaterException
+import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.text.NumberFormat
@@ -15,24 +16,24 @@ class BuiltinFormatter(private val locale: Locale) {
         if (value == null) return null
 
         return when (value) {
-            // Date types: use default or custom pattern
             is LocalDate -> formatDate(value, pattern ?: "yyyy/MM/dd")
             is LocalDateTime -> formatDate(value, pattern ?: "yyyy/MM/dd HH:mm")
             is ZonedDateTime -> formatDate(value, pattern ?: "yyyy/MM/dd HH:mm")
             is Date -> formatDate(value, pattern ?: "yyyy/MM/dd HH:mm")
 
-            // Integer types: thousand separators only
             is Byte, is Short, is Int, is Long ->
                 formatNumber(value as Number, pattern ?: "#,##0")
 
-            // Floating point: thousand separators + 2 decimals
             is Float, is Double ->
                 formatNumber(value as Number, pattern ?: "#,##0.00")
+
+            is BigDecimal ->
+                formatNumber(value, pattern ?: "#,##0.00")
 
             else -> throw TemplaterException.DeepRuntimeError(
                 $$"$format: unsupported type $${value.javaClass.name}. " +
                         "Supported types: LocalDate, LocalDateTime, ZonedDateTime, Date, " +
-                        "Byte, Short, Int, Long, Float, Double",
+                        "Byte, Short, Int, Long, Float, Double, BigDecimal",
             )
         }
     }

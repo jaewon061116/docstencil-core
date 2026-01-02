@@ -3,6 +3,7 @@ package com.docstencil.core.integration
 import com.docstencil.core.api.OfficeTemplate
 import com.docstencil.core.api.OfficeTemplateOptions
 import com.docstencil.core.helper.*
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.test.Test
@@ -488,6 +489,32 @@ class BasicE2ETest {
         val data = mapOf(
             "list" to listOf("hello"),
             "emptyList" to emptyList(),
+        )
+
+        val actualBytes = OfficeTemplate.fromBytes(templateBytes, options).render(data).bytes
+
+        DocxComparisonHelper.assertDocxEquals(expectedBytes, actualBytes, testName)
+    }
+
+    @Test
+    fun `should handle if statement spanning multiple paragraphs`() {
+        val testName = "e2e_invoice_02"
+        val templateBytes = DocxComparisonHelper.loadFixture("${testName}_in.docx")
+        val expectedBytes = DocxComparisonHelper.loadFixture("${testName}_out.docx")
+
+        val data = mapOf(
+            "invoice" to Invoice02Invoice(
+                invoiceNumber = "INV-1234",
+                invoiceDate = LocalDate.now(),
+                company = Invoice02Company("Acme Corp", "123 Business Ave, New York, NY", "First National Bank", "1234567890"),
+                customer = Invoice02Customer("John Smith", "john@example.com"),
+                items = listOf(
+                    Invoice02LineItem("Web Development", 40, BigDecimal("150.00")),
+                    Invoice02LineItem("UI Design", 20, BigDecimal("125.00"))
+                ),
+                taxRate = 10,
+                paymentTermsDays = 30
+            ),
         )
 
         val actualBytes = OfficeTemplate.fromBytes(templateBytes, options).render(data).bytes

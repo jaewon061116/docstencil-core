@@ -2,6 +2,8 @@ package com.docstencil.core.render
 
 import com.docstencil.core.error.TemplaterException
 import com.docstencil.core.scanner.model.TemplateToken
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.*
 
 class BinaryOpInterpreterHelper {
@@ -14,7 +16,42 @@ class BinaryOpInterpreterHelper {
     }
 
     fun performArithmetic(left: Any?, right: Any?, operator: TemplateToken, op: ArithmeticOp): Any {
-        // Handle numbers.
+        // Handle BigDecimal (highest precision, takes priority).
+        if (left != null && right != null && (left is BigDecimal || right is BigDecimal)) {
+            val leftBD = when (left) {
+                is BigDecimal -> left
+                is Number -> BigDecimal(left.toString())
+                else -> throw TemplaterException.RuntimeError(
+                    "Operands must be numbers for arithmetic operations.",
+                    operator,
+                )
+            }
+            val rightBD = when (right) {
+                is BigDecimal -> right
+                is Number -> BigDecimal(right.toString())
+                else -> throw TemplaterException.RuntimeError(
+                    "Operands must be numbers for arithmetic operations.",
+                    operator,
+                )
+            }
+
+            if ((op == ArithmeticOp.DIVIDE || op == ArithmeticOp.MODULO) &&
+                rightBD.compareTo(BigDecimal.ZERO) == 0
+            ) {
+                val opName = if (op == ArithmeticOp.DIVIDE) "Division" else "Modulo"
+                throw TemplaterException.RuntimeError("$opName by zero.", operator)
+            }
+
+            return when (op) {
+                ArithmeticOp.ADD -> leftBD.add(rightBD)
+                ArithmeticOp.SUBTRACT -> leftBD.subtract(rightBD)
+                ArithmeticOp.MULTIPLY -> leftBD.multiply(rightBD)
+                ArithmeticOp.DIVIDE -> leftBD.divide(rightBD, 10, RoundingMode.HALF_UP)
+                ArithmeticOp.MODULO -> leftBD.remainder(rightBD)
+            }
+        }
+
+        // Handle primitive numbers.
         if (left != null && right != null &&
             (left is Byte || left is Short || left is Int || left is Long || left is Float || left is Double) &&
             (right is Byte || right is Short || right is Int || right is Long || right is Float || right is Double)
@@ -383,6 +420,11 @@ class BinaryOpInterpreterHelper {
         // Handle numeric type coercion for cross-type comparisons.
         if (left is Number && right is Number) {
             val result = when {
+                left is BigDecimal || right is BigDecimal -> {
+                    val leftBD = left as? BigDecimal ?: BigDecimal(left.toString())
+                    val rightBD = right as? BigDecimal ?: BigDecimal(right.toString())
+                    leftBD.compareTo(rightBD)
+                }
                 left is Double || left is Float || right is Double || right is Float -> {
                     left.toDouble().compareTo(right.toDouble())
                 }

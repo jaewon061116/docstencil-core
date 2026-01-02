@@ -7,6 +7,7 @@ import com.docstencil.core.rewrite.XmlStreamRewriter
 import com.docstencil.core.scanner.model.TemplateToken
 import com.docstencil.core.scanner.model.TemplateTokenType
 import com.docstencil.core.scanner.model.XmlInputToken
+import java.math.BigDecimal
 import java.util.*
 import java.util.stream.Collectors
 
@@ -487,6 +488,11 @@ class Renderer(
         }
 
         private fun isEqual(a: Any?, b: Any?): Boolean {
+            if (a is Number && b is Number) {
+                val aBD = a as? BigDecimal ?: BigDecimal(a.toString())
+                val bBD = b as? BigDecimal ?: BigDecimal(b.toString())
+                return aBD.compareTo(bBD) == 0
+            }
             return Objects.equals(a, b)
         }
 

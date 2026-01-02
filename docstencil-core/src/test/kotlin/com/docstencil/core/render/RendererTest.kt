@@ -6,6 +6,7 @@ import com.docstencil.core.error.TemplaterException
 import com.docstencil.core.parser.model.*
 import com.docstencil.core.render.model.XmlOutputToken
 import com.docstencil.core.scanner.model.*
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -2233,6 +2234,51 @@ class RendererTest {
     }
 
     @Test
+    fun `$format should format BigDecimal with default pattern`() {
+        val formatCall = CallExpr(
+            VariableExpr(createToken(TemplateTokenType.IDENTIFIER, $$"$format")),
+            createToken(TemplateTokenType.RIGHT_PAREN, ")"),
+            listOf(LiteralExpr(BigDecimal("1234567.89"))),
+        )
+
+        val program = listOf(ExpressionStmt(formatCall))
+        val renderer = Renderer(createGlobals().env)
+        val result = renderer.render(program, emptyMap())
+
+        assertTokensEqual(XmlOutputToken.fromString("1,234,567.89"), result)
+    }
+
+    @Test
+    fun `$format should format BigDecimal with custom pattern`() {
+        val formatCall = CallExpr(
+            VariableExpr(createToken(TemplateTokenType.IDENTIFIER, $$"$format")),
+            createToken(TemplateTokenType.RIGHT_PAREN, ")"),
+            listOf(LiteralExpr(BigDecimal("1234567.891")), LiteralExpr("0.0000")),
+        )
+
+        val program = listOf(ExpressionStmt(formatCall))
+        val renderer = Renderer(createGlobals().env)
+        val result = renderer.render(program, emptyMap())
+
+        assertTokensEqual(XmlOutputToken.fromString("1234567.8910"), result)
+    }
+
+    @Test
+    fun `$formatNumber should format BigDecimal`() {
+        val formatCall = CallExpr(
+            VariableExpr(createToken(TemplateTokenType.IDENTIFIER, $$"$formatNumber")),
+            createToken(TemplateTokenType.RIGHT_PAREN, ")"),
+            listOf(LiteralExpr(BigDecimal("9876543.21")), LiteralExpr("#,##0.00")),
+        )
+
+        val program = listOf(ExpressionStmt(formatCall))
+        val renderer = Renderer(createGlobals().env)
+        val result = renderer.render(program, emptyMap())
+
+        assertTokensEqual(XmlOutputToken.fromString("9,876,543.21"), result)
+    }
+
+    @Test
     fun `$format should return null for null input`() {
         val formatCall = CallExpr(
             VariableExpr(createToken(TemplateTokenType.IDENTIFIER, $$"$format")),
@@ -2262,5 +2308,106 @@ class RendererTest {
             renderer.render(program, emptyMap())
         }
         assertTrue(exception.message!!.contains($$"$format: unsupported type"))
+    }
+
+    @Test
+    fun `visitBinaryExpr should add BigDecimal and Int`() {
+        val left = LiteralExpr(BigDecimal("10.5"))
+        val right = LiteralExpr(5)
+        val operator = createToken(TemplateTokenType.PLUS, "+")
+        val expr = BinaryExpr(left, operator, right)
+        val (interpreter, env) = createInterpreterWithEnv()
+        val result = interpreter.visitBinaryExpr(expr, env)
+        assertEquals(BigDecimal("15.5"), result)
+    }
+
+    @Test
+    fun `visitBinaryExpr should subtract BigDecimals`() {
+        val left = LiteralExpr(BigDecimal("10.5"))
+        val right = LiteralExpr(BigDecimal("3.2"))
+        val operator = createToken(TemplateTokenType.MINUS, "-")
+        val expr = BinaryExpr(left, operator, right)
+        val (interpreter, env) = createInterpreterWithEnv()
+        val result = interpreter.visitBinaryExpr(expr, env)
+        assertEquals(BigDecimal("7.3"), result)
+    }
+
+    @Test
+    fun `visitBinaryExpr should multiply BigDecimal and Double`() {
+        val left = LiteralExpr(BigDecimal("2.5"))
+        val right = LiteralExpr(4.0)
+        val operator = createToken(TemplateTokenType.STAR, "*")
+        val expr = BinaryExpr(left, operator, right)
+        val (interpreter, env) = createInterpreterWithEnv()
+        val result = interpreter.visitBinaryExpr(expr, env)
+        assertTrue(result is BigDecimal)
+        assertEquals(0, result.compareTo(BigDecimal("10.0")))
+    }
+
+    @Test
+    fun `visitBinaryExpr should divide BigDecimals with scale`() {
+        val left = LiteralExpr(BigDecimal("10"))
+        val right = LiteralExpr(BigDecimal("3"))
+        val operator = createToken(TemplateTokenType.SLASH, "/")
+        val expr = BinaryExpr(left, operator, right)
+        val (interpreter, env) = createInterpreterWithEnv()
+        val result = interpreter.visitBinaryExpr(expr, env)
+        assertEquals(BigDecimal("3.3333333333"), result)
+    }
+
+    @Test
+    fun `visitBinaryExpr should calculate BigDecimal modulo`() {
+        val left = LiteralExpr(BigDecimal("10"))
+        val right = LiteralExpr(BigDecimal("3"))
+        val operator = createToken(TemplateTokenType.PERCENT, "%")
+        val expr = BinaryExpr(left, operator, right)
+        val (interpreter, env) = createInterpreterWithEnv()
+        val result = interpreter.visitBinaryExpr(expr, env)
+        assertEquals(0, (result as BigDecimal).compareTo(BigDecimal("1")))
+    }
+
+    @Test
+    fun `visitBinaryExpr should throw on BigDecimal division by zero`() {
+        val left = LiteralExpr(BigDecimal("10"))
+        val right = LiteralExpr(BigDecimal("0"))
+        val operator = createToken(TemplateTokenType.SLASH, "/")
+        val expr = BinaryExpr(left, operator, right)
+        val (interpreter, env) = createInterpreterWithEnv()
+        assertFailsWith<TemplaterException.RuntimeError> {
+            interpreter.visitBinaryExpr(expr, env)
+        }
+    }
+
+    @Test
+    fun `visitBinaryExpr should compare BigDecimal greater than Int`() {
+        val left = LiteralExpr(BigDecimal("5.5"))
+        val right = LiteralExpr(5)
+        val operator = createToken(TemplateTokenType.GREATER, ">")
+        val expr = BinaryExpr(left, operator, right)
+        val (interpreter, env) = createInterpreterWithEnv()
+        val result = interpreter.visitBinaryExpr(expr, env)
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun `visitBinaryExpr should compare BigDecimal less than`() {
+        val left = LiteralExpr(BigDecimal("1.0"))
+        val right = LiteralExpr(BigDecimal("2.0"))
+        val operator = createToken(TemplateTokenType.LESS, "<")
+        val expr = BinaryExpr(left, operator, right)
+        val (interpreter, env) = createInterpreterWithEnv()
+        val result = interpreter.visitBinaryExpr(expr, env)
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun `visitBinaryExpr should compare BigDecimal equal to Int`() {
+        val left = LiteralExpr(BigDecimal("5"))
+        val right = LiteralExpr(5)
+        val operator = createToken(TemplateTokenType.EQUAL_EQUAL, "==")
+        val expr = BinaryExpr(left, operator, right)
+        val (interpreter, env) = createInterpreterWithEnv()
+        val result = interpreter.visitBinaryExpr(expr, env)
+        assertEquals(true, result)
     }
 }
