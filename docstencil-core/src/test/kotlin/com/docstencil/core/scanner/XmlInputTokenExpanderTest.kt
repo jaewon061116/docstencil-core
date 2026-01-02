@@ -311,29 +311,33 @@ class XmlInputTokenExpanderTest {
         val ifToken = ifToken()
         val endToken = endToken()
         val tokens = listOf(
-            tag("w:p", TagPartType.OPENING),
+            tag("w:tr", TagPartType.OPENING),
+            tag("w:tc", TagPartType.OPENING),
             ifToken,
-            tag("w:p", TagPartType.CLOSING),
-            tag("w:p", TagPartType.OPENING),
+            tag("w:tc", TagPartType.CLOSING),
+            tag("w:tc", TagPartType.OPENING),
             content("Content"),
             endToken,
-            tag("w:p", TagPartType.CLOSING),
+            tag("w:tc", TagPartType.CLOSING),
+            tag("w:tr", TagPartType.CLOSING),
         )
 
         val result = createExpander().expand(tokens)
 
-        assertEquals(7, result.size)
+        assertEquals(9, result.size)
 
         assertSame(ifToken, result[0])
-        assertRawXmlTag(result[1], "w:p", TagPartType.OPENING)
-        assertRawXmlTag(result[2], "w:p", TagPartType.CLOSING)
-        assertRawXmlTag(result[3], "w:p", TagPartType.OPENING)
-        assertRawXmlContent(result[4], "Content")
-        assertRawXmlTag(result[5], "w:p", TagPartType.CLOSING)
-        assertSame(endToken, result[6])
+        assertRawXmlTag(result[1], "w:tr", TagPartType.OPENING)
+        assertRawXmlTag(result[2], "w:tc", TagPartType.OPENING)
+        assertRawXmlTag(result[3], "w:tc", TagPartType.CLOSING)
+        assertRawXmlTag(result[4], "w:tc", TagPartType.OPENING)
+        assertRawXmlContent(result[5], "Content")
+        assertRawXmlTag(result[6], "w:tc", TagPartType.CLOSING)
+        assertRawXmlTag(result[7], "w:tr", TagPartType.CLOSING)
+        assertSame(endToken, result[8])
 
-        assertEquals(ifToken.expansionTarget, XmlInputToken.ExpansionTarget.Tag("w:p"))
-        assertEquals(endToken.expansionTarget, XmlInputToken.ExpansionTarget.Tag("w:p"))
+        assertEquals(ifToken.expansionTarget, XmlInputToken.ExpansionTarget.Tag("w:tr"))
+        assertEquals(endToken.expansionTarget, XmlInputToken.ExpansionTarget.Tag("w:tr"))
 
         assertPaired(ifToken, endToken)
     }

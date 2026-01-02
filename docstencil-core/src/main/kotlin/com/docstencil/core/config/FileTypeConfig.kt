@@ -186,7 +186,6 @@ data class FileTypeConfig(
                     "w:pStyle",
                 ),
                 expansionRules = listOf(
-                    ExpansionRule(contains = "w:p", expand = "w:p"),
                     ExpansionRule(contains = "w:tc", notContains = "w:tbl", expand = "w:tr"),
                 ),
                 defaultTagRawXmlExpansion = "w:p",
