@@ -219,8 +219,8 @@ docx4j is a low-level library for manipulating OOXML documents. It's powerful bu
 
 The [`examples/`](examples/) directory contains complete, runnable projects:
 
-- **[spring-boot-getting-started](examples/spring-boot-getting-started)**: Minimal Spring Boot app that generates a DOCX from a template
-- **[spring-boot-invoice-generator](examples/spring-boot-invoice-generator)**: Invoice generation with line items, totals, and formatting
+- **spring-boot-getting-started** ([Java](examples/spring-boot-getting-started-java), [Kotlin](examples/spring-boot-getting-started-kotlin)): Minimal Spring Boot app that generates a DOCX from a template
+- **spring-boot-invoice-generator** ([Java](examples/spring-boot-invoice-generator-java), [Kotlin](examples/spring-boot-invoice-generator-kotlin)): Invoice generation with line items, totals, and formatting
 
 ## Documentation
 
